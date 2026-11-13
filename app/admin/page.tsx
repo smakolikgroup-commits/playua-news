@@ -70,7 +70,9 @@ export default async function AdminPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Посилання на головне зображення (URL)</label>
+          
+export const dynamic = "force-dynamic";
+<label className="block text-sm font-medium text-slate-300 mb-2">Посилання на головне зображення (URL)</label>
           <input type="url" name="image" className="w-full bg-slate-700 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-cyan-400" placeholder="https://example.com" />
         </div>
 
