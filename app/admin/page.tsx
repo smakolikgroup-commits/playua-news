@@ -114,6 +114,7 @@ export default async function AdminPage({
     const content = formData.get("content") as string;
     const image = formData.get("image") as string;
     const categoryId = formData.get("categoryId") as string;
+    const defaultImage = "https://unsplash.com";
 
     if (postId) {
       await db.post.update({
@@ -121,7 +122,7 @@ export default async function AdminPage({
         data: {
           title,
           content,
-          image: image || "https://unsplash.com",
+          image: image || defaultImage,
           categoryId,
         },
       });
@@ -140,7 +141,7 @@ export default async function AdminPage({
           title,
           slug,
           content,
-          image: image || "https://unsplash.com",
+          image: image || defaultImage,
           categoryId,
         },
       });
