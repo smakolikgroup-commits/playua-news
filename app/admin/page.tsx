@@ -15,7 +15,6 @@ export default async function AdminPage({
   const isAuthorized = cookieStore.get("admin_session")?.value === "authenticated";
   const { error, edit } = await searchParams;
 
-  // 1. Авторизація
   async function loginAction(formData: FormData) {
     "use server";
     const password = formData.get("password") as string;
@@ -34,7 +33,6 @@ export default async function AdminPage({
     }
   }
 
-  // 2. Вихід
   async function logoutAction() {
     "use server";
     const store = await cookies();
@@ -83,7 +81,6 @@ export default async function AdminPage({
     );
   }
 
-  // Завантажуємо категорії та список усіх новин
   let categories = await db.category.findMany();
 
   if (categories.length === 0) {
@@ -102,10 +99,8 @@ export default async function AdminPage({
     include: { category: true },
   });
 
-  // Якщо натиснули "Редагувати" — знаходимо потрібну статтю
   const editingPost = edit ? posts.find((p) => p.id === edit) : null;
 
-  // 3. Створення АБО Оновлення новини
   async function savePost(formData: FormData) {
     "use server";
 
@@ -121,7 +116,6 @@ export default async function AdminPage({
     const categoryId = formData.get("categoryId") as string;
 
     if (postId) {
-      // Оновлюємо існуючу статтю
       await db.post.update({
         where: { id: postId },
         data: {
@@ -132,7 +126,6 @@ export default async function AdminPage({
         },
       });
     } else {
-      // Створюємо нову статтю
       const slug =
         title
           .toLowerCase()
@@ -158,7 +151,6 @@ export default async function AdminPage({
     redirect("/admin");
   }
 
-  // 4. Видалення новини
   async function deletePost(formData: FormData) {
     "use server";
 
@@ -190,7 +182,6 @@ export default async function AdminPage({
         </form>
       </div>
 
-      {/* Форма створення або редагування */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-cyan-400">
           {editingPost ? "Редагувати статтю" : "Додати нову публікацію"}
@@ -271,7 +262,6 @@ export default async function AdminPage({
         </button>
       </form>
 
-      {/* Список опублікованих новин */}
       <section>
         <h2 className="text-2xl font-bold mb-6 text-slate-200 border-b border-slate-700 pb-3">
           Усі публікації ({posts.length})
@@ -295,10 +285,17 @@ export default async function AdminPage({
                   </div>
                   <Link
                     href={`/news/${post.slug}`}
-className="font-bold text-lg text-white hover:text-cyan-300 transition line-clamp-1"
->
-{post.title}
+                    className="font-bold text-lg text-white hover:text-cyan-300 transition line-clamp-1"
+                  >
+                    {post.title}
+                  </Link>
+                </div>
 
+                <div className="flex items-center gap-2 shrink-0">
+                  <Link
+                    href={`/admin?edit=${post.id}`}
+className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-3 py-1.5 rounded text-sm font-medium transition"
+>
 Редагувати
 Видалити
 
