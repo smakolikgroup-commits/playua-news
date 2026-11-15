@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic";import CommentsSection from "./CommentsSection";
 
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
@@ -127,6 +127,7 @@ export default async function ArticlePage({
           {post.content}
         </div>
       </article>
+      <CommentsSection postId={post.id} slug={post.slug} />
 
       {relatedPosts.length > 0 && (
         <section className="max-w-6xl mx-auto px-4 py-12 border-t border-slate-800/80">

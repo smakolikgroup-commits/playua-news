@@ -9,19 +9,29 @@ generator client {
 
 model Category {
   id    String @id @default(cuid())
-  name  String @unique
+  name  String
   slug  String @unique
   posts Post[]
 }
 
 model Post {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  content     String   @db.Text
-  image       String
-  views        Int     @default(0)
-  createdAt   DateTime @default(now())
-  categoryId  String
-  category    Category @relation(fields: [categoryId], references: [id])
+  id         String    @id @default(cuid())
+  title      String
+  slug       String    @unique
+  content    String
+  image      String
+  views      Int       @default(0)
+  createdAt  DateTime  @default(now())
+  categoryId String
+  category   Category  @relation(fields: [categoryId], references: [id])
+  comments   Comment[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  author    String
+  text      String
+  createdAt DateTime @default(now())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
