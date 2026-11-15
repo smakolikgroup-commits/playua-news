@@ -31,7 +31,6 @@ export default async function ArticlePage({
 
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100">
-      {/* Спільна шапка сайту */}
       <header className="sticky top-0 z-50 bg-[#0b0f19]/90 backdrop-blur-md border-b border-slate-800">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="text-2xl font-black tracking-tighter text-white flex items-center gap-1">
@@ -52,7 +51,6 @@ export default async function ArticlePage({
         </div>
       </header>
 
-      {/* Основний контент статті */}
       <article className="max-w-4xl mx-auto px-4 py-10">
         <div className="flex items-center gap-3 mb-4">
           <Link
@@ -87,7 +85,6 @@ export default async function ArticlePage({
         </div>
       </article>
 
-      {/* Блок "Читайте також" */}
       {relatedPosts.length > 0 && (
         <section className="max-w-6xl mx-auto px-4 py-12 border-t border-slate-800/80">
           <h2 className="text-xl font-bold uppercase tracking-wider text-slate-200 border-l-4 border-cyan-400 pl-3 mb-6">
