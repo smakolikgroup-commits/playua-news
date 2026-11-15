@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { db } from "@/lib/db";
 import Link from "next/link";
+import PopularSection from "./PopularSection";
 
 export default async function HomePage({
   searchParams,
@@ -180,6 +181,7 @@ export default async function HomePage({
                 </Link>
               </section>
             )}
+            {!isFiltered && <PopularSection />}
 
             {gridPosts.length > 0 && (
               <section>
