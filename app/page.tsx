@@ -3,39 +3,47 @@ export const dynamic = "force-dynamic";
 import { db } from "@/lib/db";
 import Link from "next/link";
 import PopularSection from "./PopularSection";
+import Pagination from "./Pagination";
+import PostCard from "./PostCard";
 
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; q?: string }>;
+  searchParams: Promise<{ category?: string; q?: string; page?: string }>;
 }) {
-  const { category, q } = await searchParams;
+  const { category, q, page } = await searchParams;
   const query = q?.trim() || "";
+  const currentPage = Math.max(1, Number(page) || 1);
+  const pageSize = 10;
 
-  const categories = await db.category.findMany({
-    orderBy: { name: "asc" },
-  });
+  const categories = await db.category.findMany({ orderBy: { name: "asc" } });
+
+  const whereClause = {
+    ...(category ? { category: { slug: category } } : {}),
+    ...(query
+      ? {
+          OR: [
+            { title: { contains: query, mode: "insensitive" as const } },
+            { content: { contains: query, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
+
+  const totalPosts = await db.post.count({ where: whereClause });
+  const totalPages = Math.ceil(totalPosts / pageSize);
 
   const posts = await db.post.findMany({
-    where: {
-      ...(category ? { category: { slug: category } } : {}),
-      ...(query
-        ? {
-            OR: [
-              { title: { contains: query, mode: "insensitive" } },
-              { content: { contains: query, mode: "insensitive" } },
-            ],
-          }
-        : {}),
-    },
+    where: whereClause,
     orderBy: { createdAt: "desc" },
-    take: 20,
+    skip: (currentPage - 1) * pageSize,
+    take: pageSize,
     include: { category: true },
   });
 
-  const isFiltered = Boolean(category || query);
-  const featuredPost = !isFiltered ? posts.at(0) : null;
-  const gridPosts = !isFiltered ? posts.slice(1) : posts;
+  const isFirstPageUnfiltered = !category && !query && currentPage === 1;
+  const featuredPost = isFirstPageUnfiltered ? posts.at(0) : null;
+  const gridPosts = isFirstPageUnfiltered ? posts.slice(1) : posts;
 
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 flex flex-col">
@@ -45,14 +53,11 @@ export default async function HomePage({
             <Link href="/" className="text-2xl font-black tracking-tighter text-white flex items-center gap-1 shrink-0">
               PLAY<span className="text-cyan-400">UA</span>
             </Link>
-
             <nav className="hidden lg:flex items-center gap-1.5">
               <Link
                 href="/"
                 className={`px-3 py-1.5 rounded-md text-sm font-semibold transition ${
-                  !category && !query
-                    ? "bg-cyan-500 text-slate-950"
-                    : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                  !category && !query ? "bg-cyan-500 text-slate-950" : "text-slate-300 hover:bg-slate-800 hover:text-white"
                 }`}
               >
                 Усі
@@ -62,9 +67,7 @@ export default async function HomePage({
                   key={cat.id}
                   href={`/?category=${cat.slug}`}
                   className={`px-3 py-1.5 rounded-md text-sm font-semibold transition ${
-                    category === cat.slug
-                      ? "bg-cyan-500 text-slate-950"
-                      : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                    category === cat.slug ? "bg-cyan-500 text-slate-950" : "text-slate-300 hover:bg-slate-800 hover:text-white"
                   }`}
                 >
                   {cat.name}
@@ -82,15 +85,10 @@ export default async function HomePage({
                 placeholder="Пошук новин..."
                 className="bg-slate-800/90 border border-slate-700 focus:border-cyan-400 rounded-md pl-3 pr-8 py-1.5 text-sm text-white placeholder:text-slate-400 focus:outline-none w-36 sm:w-52 transition"
               />
-              <button
-                type="submit"
-                aria-label="Шукати"
-                className="absolute right-2 text-slate-400 hover:text-cyan-400 text-xs font-bold"
-              >
+              <button type="submit" aria-label="Шукати" className="absolute right-2 text-slate-400 hover:text-cyan-400 text-xs font-bold">
                 🔍
               </button>
             </form>
-
             <Link
               href="/admin"
               className="text-xs font-bold uppercase tracking-wider bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-slate-700 px-3 py-2 rounded-md transition shrink-0"
@@ -99,35 +97,13 @@ export default async function HomePage({
             </Link>
           </div>
         </div>
-
-        <div className="lg:hidden flex items-center gap-2 overflow-x-auto px-4 py-2 border-t border-slate-800/60">
-          <Link
-            href="/"
-            className={`px-3 py-1 rounded text-xs font-semibold shrink-0 ${
-              !category && !query ? "bg-cyan-500 text-slate-950" : "bg-slate-800 text-slate-300"
-            }`}
-          >
-            Усі
-          </Link>
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/?category=${cat.slug}`}
-              className={`px-3 py-1 rounded text-xs font-semibold shrink-0 ${
-                category === cat.slug ? "bg-cyan-500 text-slate-950" : "bg-slate-800 text-slate-300"
-              }`}
-            >
-              {cat.name}
-            </Link>
-          ))}
-        </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
         {query && (
           <div className="mb-6 flex items-center justify-between bg-slate-900 border border-slate-800 px-4 py-3 rounded-lg">
             <p className="text-sm text-slate-300">
-              Результати пошуку за запитом: <span className="font-bold text-cyan-400">«{query}»</span> ({posts.length})
+              Результати пошуку за запитом: <span className="font-bold text-cyan-400">«{query}»</span> ({totalPosts})
             </p>
             <Link href="/" className="text-xs text-slate-400 hover:text-white underline">
               Скинути пошук
@@ -138,9 +114,7 @@ export default async function HomePage({
         {posts.length === 0 ? (
           <div className="text-center py-20 bg-slate-900/50 rounded-2xl border border-slate-800">
             <p className="text-slate-400 text-lg mb-4">
-              {query
-                ? `За запитом «${query}» нічого не знайдено.`
-                : "У цій рубриці поки що немає публікацій."}
+              {query ? `За запитом «${query}» нічого не знайдено.` : "У цій рубриці поки що немає публікацій."}
             </p>
             <Link href="/" className="text-cyan-400 hover:underline font-medium">
               ← Повернутися до всіх новин
@@ -149,7 +123,7 @@ export default async function HomePage({
         ) : (
           <>
             {featuredPost && (
-              <section className="mb-12">
+              <section className="mb-10">
                 <Link
                   href={`/news/${featuredPost.slug}`}
                   className="group relative block rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 hover:border-cyan-500/50 transition duration-300 shadow-2xl"
@@ -181,64 +155,37 @@ export default async function HomePage({
                 </Link>
               </section>
             )}
-            {!isFiltered && <PopularSection />}
+
+            {isFirstPageUnfiltered && <PopularSection />}
 
             {gridPosts.length > 0 && (
               <section>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold uppercase tracking-wider text-slate-200 border-l-4 border-cyan-400 pl-3">
-                    {query
-                      ? "Знайдені публікації"
-                      : category
-                      ? "Матеріали рубрики"
-                      : "Свіжі публікації"}
-                  </h2>
-                </div>
-
+                <h2 className="text-xl font-bold uppercase tracking-wider text-slate-200 border-l-4 border-cyan-400 pl-3 mb-6">
+                  {query
+                    ? "Знайдені публікації"
+                    : category
+                    ? "Матеріали рубрики"
+                    : currentPage > 1
+                    ? `Архів новин — сторінка ${currentPage}`
+                    : "Свіжі публікації"}
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {gridPosts.map((post) => (
-                    <article
-                      key={post.id}
-                      className="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden flex flex-col hover:border-slate-700 hover:-translate-y-1 transition duration-300 shadow-lg"
-                    >
-                      <Link href={`/news/${post.slug}`} className="block aspect-video overflow-hidden bg-slate-800">
-                        <img
-                          src={post.image}
-                          alt={post.title}
-                          className="w-full h-full object-cover hover:scale-105 transition duration-500"
-                        />
-                      </Link>
+                    <PostCard key={post.id} post={post} />
+                  ))}
+                </div>
+              </section>
+            )}
 
-                      <div className="p-5 flex flex-col flex-grow">
-                        <div className="flex items-center justify-between gap-2 mb-3">
-                          <span className="text-xs font-bold uppercase tracking-wider text-cyan-400">
-                            {post.category.name}
-                          </span>
-                          <div className="flex items-center gap-2 text-xs text-slate-500">
-                            <span>{new Date(post.createdAt).toLocaleDateString("uk-UA")}</span>
-                            <span>•</span>
-                            <span>👁 {post.views}</span>
-                          </div>
-                        </div>
-
-                        <Link href={`/news/${post.slug}`} className="block mb-3">
-                          <h3 className="text-lg font-bold text-white hover:text-cyan-400 transition line-clamp-2 leading-snug">
-                            {post.title}
-                          </h3>
-                        </Link>
-
-                                           <p className="text-slate-400 text-sm line-clamp-3 mt-auto">
-                       {post.content}
-                     </p>
-                   </div>
-                 </article>
-               ))}
-             </div>
-           </section>
-         )}
-       </>
-     )}
-   </main>
- </div>
-);
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              category={category}
+              query={query}
+            />
+          </>
+        )}
+      </main>
+    </div>
+  );
 }
