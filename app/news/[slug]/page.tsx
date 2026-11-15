@@ -9,15 +9,20 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = await db.post.findUnique({
-    where: { slug },
-  });
+   const description = post.content.slice(0, 150).trim() + "...";
+const existingPost = await db.post.findUnique({
+  where: { slug },
+});
 
-  if (!post) {
-    return { title: "Статтю не знайдено" };
-  }
+if (!existingPost) {
+  notFound();
+}
 
-  const description = post.content.slice(0, 150).trim() + "...";
+const post = await db.post.update({
+  where: { slug },
+  data: { views: { increment: 1 } },
+  include: { category: true },
+});
 
   return {
     title: post.title,
@@ -100,7 +105,12 @@ export default async function ArticlePage({
               year: "numeric",
             })}
           </time>
-        </div>
+        <span className="text-sm text-slate-400 flex items-center gap-1">
+  👁 {post.views}
+</span>
+
+
+</div>
 
         <h1 className="text-3xl md:text-5xl font-extrabold text-white leading-tight mb-8">
           {post.title}
