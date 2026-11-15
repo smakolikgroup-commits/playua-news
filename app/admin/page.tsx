@@ -4,8 +4,9 @@ import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import Link from "next/link";
+import { put } from "@vercel/blob";
 import PostsList from "./PostsList";
-
+import CategoryManager from "./CategoryManager";
 
 export default async function AdminPage({
   searchParams,
@@ -112,8 +113,16 @@ export default async function AdminPage({
 
     const title = formData.get("title") as string;
     const content = formData.get("content") as string;
-    const image = formData.get("image") as string;
     const categoryId = formData.get("categoryId") as string;
+    const file = formData.get("file") as File | null;
+    let imageUrl = (formData.get("image") as string)?.trim();
+
+    if (file && file.size > 0) {
+      const blob = await put(`news/${Date.now()}-${file.name}`, file, {
+        access: "public",
+      });
+      imageUrl = blob.url;
+    }
 
     const slug =
       title
@@ -129,7 +138,7 @@ export default async function AdminPage({
         title,
         slug,
         content,
-        image: image || "https://unsplash.com",
+        image: imageUrl || "https://unsplash.com",
         categoryId,
       },
     });
@@ -138,7 +147,7 @@ export default async function AdminPage({
   }
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-12 bg-slate-900 text-white min-h-screen">
+    <main className="max-w-3xl mx-auto px-4 py-12 bg-slate-900 text-white min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <Link href="/" className="text-cyan-400 hover:underline text-sm">
           ← На головну
@@ -152,7 +161,7 @@ export default async function AdminPage({
 
       <h1 className="text-3xl font-bold mb-8 text-cyan-400">Додати нову публікацію</h1>
 
-      <form action={createPost} className="space-y-6 bg-slate-800 p-6 rounded-lg border border-slate-700">
+      <form action={createPost} className="space-y-6 bg-slate-800 p-6 rounded-lg border border-slate-700 mb-12">
         <div>
           <label className="block text-sm font-medium text-slate-300 mb-2">Назва статті</label>
           <input
@@ -180,7 +189,21 @@ export default async function AdminPage({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Посилання на головне зображення (URL)</label>
+          <label className="block text-sm font-medium text-slate-300 mb-2">
+            Завантажити обкладинку з комп&apos;ютера (JPG, PNG, WebP)
+          </label>
+          <input
+            type="file"
+            name="file"
+            accept="image/*"
+            className="w-full bg-slate-700 border border-slate-600 rounded p-2.5 text-sm text-slate-200 file:mr-4 file:py-1.5 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-cyan-500 file:text-slate-950 hover:file:bg-cyan-400"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-2">
+            Або вставте посилання на зображення (URL)
+          </label>
           <input
             type="url"
             name="image"
@@ -197,7 +220,7 @@ export default async function AdminPage({
             required
             className="w-full bg-slate-700 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-cyan-400"
             placeholder="Напишіть контент статті тут..."
-          ></textarea>
+          />
         </div>
 
         <button
@@ -207,8 +230,9 @@ export default async function AdminPage({
           Опублікувати новину
         </button>
       </form>
-    <PostsList />
 
-</main>
+      <CategoryManager />
+      <PostsList />
+    </main>
   );
 }
