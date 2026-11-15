@@ -38,7 +38,6 @@ export default async function HomePage({
 
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 flex flex-col">
-      {/* Шапка сайту (Header) */}
       <header className="sticky top-0 z-50 bg-[#0b0f19]/95 backdrop-blur-md border-b border-slate-800">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-6">
@@ -46,7 +45,6 @@ export default async function HomePage({
               PLAY<span className="text-cyan-400">UA</span>
             </Link>
 
-            {/* Навігація та фільтри категорій */}
             <nav className="hidden lg:flex items-center gap-1.5">
               <Link
                 href="/"
@@ -75,7 +73,6 @@ export default async function HomePage({
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Форма пошуку */}
             <form action="/" method="GET" className="relative flex items-center">
               <input
                 type="text"
@@ -102,7 +99,6 @@ export default async function HomePage({
           </div>
         </div>
 
-        {/* Мобільне меню категорій */}
         <div className="lg:hidden flex items-center gap-2 overflow-x-auto px-4 py-2 border-t border-slate-800/60">
           <Link
             href="/"
@@ -126,9 +122,7 @@ export default async function HomePage({
         </div>
       </header>
 
-      {/* Основний контент */}
       <main className="max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
-        {/* Індикатор активного пошуку */}
         {query && (
           <div className="mb-6 flex items-center justify-between bg-slate-900 border border-slate-800 px-4 py-3 rounded-lg">
             <p className="text-sm text-slate-300">
@@ -153,7 +147,6 @@ export default async function HomePage({
           </div>
         ) : (
           <>
-            {/* Головна новина (Hero-блок, показується на головній без фільтрів) */}
             {featuredPost && (
               <section className="mb-12">
                 <Link
@@ -176,6 +169,9 @@ export default async function HomePage({
                       <span className="text-xs text-slate-300 font-medium">
                         {new Date(featuredPost.createdAt).toLocaleDateString("uk-UA")}
                       </span>
+                      <span className="text-xs text-slate-300 font-medium flex items-center gap-1">
+                        👁 {featuredPost.views}
+                      </span>
                     </div>
                     <h1 className="text-2xl md:text-4xl font-extrabold text-white group-hover:text-cyan-400 transition leading-tight max-w-4xl">
                       {featuredPost.title}
@@ -185,7 +181,6 @@ export default async function HomePage({
               </section>
             )}
 
-            {/* Сітка публікацій */}
             {gridPosts.length > 0 && (
               <section>
                 <div className="flex items-center justify-between mb-6">
@@ -217,9 +212,11 @@ export default async function HomePage({
                           <span className="text-xs font-bold uppercase tracking-wider text-cyan-400">
                             {post.category.name}
                           </span>
-                          <span className="text-xs text-slate-500">
-                            {new Date(post.createdAt).toLocaleDateString("uk-UA")}
-                          </span>
+                          <div className="flex items-center gap-2 text-xs text-slate-500">
+                            <span>{new Date(post.createdAt).toLocaleDateString("uk-UA")}</span>
+                            <span>•</span>
+                            <span>👁 {post.views}</span>
+                          </div>
                         </div>
 
                         <Link href={`/news/${post.slug}`} className="block mb-3">
@@ -228,18 +225,16 @@ export default async function HomePage({
                           </h3>
                         </Link>
 
-                                               <p className="text-slate-400 text-sm line-clamp-3 mt-auto">
+                        <p className="text-slate-400 text-sm line-clamp-3 mt-auto">
                           {post.content}
                         </p>
                       </div>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            )}
-          </>
-        )}
-      </main>
-    </div>
-  );
+))}
+
+)}
+</>
+)}
+
+
+);
 }
