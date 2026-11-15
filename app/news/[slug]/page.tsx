@@ -3,6 +3,40 @@ export const dynamic = "force-dynamic";
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const post = await db.post.findUnique({
+    where: { slug },
+  });
+
+  if (!post) {
+    return { title: "Статтю не знайдено" };
+  }
+
+  const description = post.content.slice(0, 150).trim() + "...";
+
+  return {
+    title: post.title,
+    description,
+    openGraph: {
+      title: post.title,
+      description,
+      type: "article",
+      images: [
+        {
+          url: post.image,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
+    },
+  };
+}
 
 export default async function ArticlePage({
   params,
