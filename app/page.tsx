@@ -225,16 +225,18 @@ export default async function HomePage({
                           </h3>
                         </Link>
 
-                        <p className="text-slate-400 text-sm line-clamp-3 mt-auto">
-                          {post.content}
-                        </p>
-                      </div>
-))}
-
-)}
-</>
-)}
-
-
+                                           <p className="text-slate-400 text-sm line-clamp-3 mt-auto">
+                       {post.content}
+                     </p>
+                   </div>
+                 </article>
+               ))}
+             </div>
+           </section>
+         )}
+       </>
+     )}
+   </main>
+ </div>
 );
 }
