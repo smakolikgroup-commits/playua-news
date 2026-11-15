@@ -82,18 +82,25 @@ export default async function AdminPage({
     );
   }
 
-  let categories = await db.category.findMany();
+  const defaultCategories = [
+    { name: "Новини", slug: "novyny" },
+    { name: "Огляди", slug: "oglyady" },
+    { name: "Кіберспорт", slug: "cybersport" },
+    { name: "Ігри", slug: "igry" },
+    { name: "Кіно", slug: "kino" },
+  ];
 
-  if (categories.length === 0) {
-    await db.category.createMany({
-      data: [
-        { name: "Новини", slug: "novyny" },
-        { name: "Огляди", slug: "oglyady" },
-        { name: "Кіберспорт", slug: "cybersport" },
-      ],
+  for (const cat of defaultCategories) {
+    await db.category.upsert({
+      where: { slug: cat.slug },
+      update: {},
+      create: cat,
     });
-    categories = await db.category.findMany();
   }
+
+  const categories = await db.category.findMany({
+    orderBy: { name: "asc" },
+  });
 
   async function createPost(formData: FormData) {
     "use server";
