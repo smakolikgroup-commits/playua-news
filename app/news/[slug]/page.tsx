@@ -3,26 +3,22 @@ export const dynamic = "force-dynamic";
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-   const description = post.content.slice(0, 150).trim() + "...";
-const existingPost = await db.post.findUnique({
-  where: { slug },
-});
+  const post = await db.post.findUnique({
+    where: { slug },
+  });
 
-if (!existingPost) {
-  notFound();
-}
+  if (!post) {
+    return { title: "Статтю не знайдено" };
+  }
 
-const post = await db.post.update({
-  where: { slug },
-  data: { views: { increment: 1 } },
-  include: { category: true },
-});
+  const description = post.content.slice(0, 150).trim() + "...";
 
   return {
     title: post.title,
@@ -50,14 +46,19 @@ export default async function ArticlePage({
 }) {
   const { slug } = await params;
 
-  const post = await db.post.findUnique({
+  const existingPost = await db.post.findUnique({
     where: { slug },
-    include: { category: true },
   });
 
-  if (!post) {
+  if (!existingPost) {
     notFound();
   }
+
+  const post = await db.post.update({
+    where: { slug },
+    data: { views: { increment: 1 } },
+    include: { category: true },
+  });
 
   const relatedPosts = await db.post.findMany({
     where: {
@@ -105,12 +106,10 @@ export default async function ArticlePage({
               year: "numeric",
             })}
           </time>
-        <span className="text-sm text-slate-400 flex items-center gap-1">
-  👁 {post.views}
-</span>
-
-
-</div>
+          <span className="text-sm text-slate-400 flex items-center gap-1">
+            👁 {post.views}
+          </span>
+        </div>
 
         <h1 className="text-3xl md:text-5xl font-extrabold text-white leading-tight mb-8">
           {post.title}
