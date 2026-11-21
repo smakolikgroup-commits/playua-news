@@ -125,11 +125,11 @@ export default async function ArticlePage({
         </div>
 
         <div className="space-y-6 text-slate-200 text-lg leading-relaxed whitespace-pre-line">
-         <ShareButtons title={post.title} slug={post.slug} />
- 
-      {post.content}
+        {post.content}
         </div>
-      </article>
+        <ShareButtons title={post.title} slug={post.slug} />
+
+       </article>
       <CommentsSection postId={post.id} slug={post.slug} />
 
       {relatedPosts.length > 0 && (
