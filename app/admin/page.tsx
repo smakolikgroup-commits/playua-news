@@ -146,11 +146,8 @@ export default async function AdminPage({
     redirect("/");
   }
 
-    return (
-    <main style={{ width: "45%", minWidth: "340px", margin: "0 auto" }} className="py-12 px-4 text-white min-h-screen">
-
-      
-    
+  return (
+    <main style={{ width: "45%", minWidth: "480px", margin: "0 auto" }} className="py-12 px-6 text-white min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <Link href="/" className="text-cyan-400 hover:underline text-sm">
           ← На головну
@@ -164,13 +161,14 @@ export default async function AdminPage({
 
       <h1 className="text-3xl font-bold mb-8 text-cyan-400">Додати нову публікацію</h1>
 
-     <form action={createPost} style={{ maxWidth: "100%", width: "100%" }} className="space-y-6 bg-slate-800 p-6 rounded-lg border border-slate-700 mb-12">
+      <form action={createPost} className="space-y-6 bg-slate-800 p-6 md:p-8 rounded-lg border border-slate-700 mb-12">
         <div>
           <label className="block text-sm font-medium text-slate-300 mb-2">Назва статті</label>
           <input
             type="text"
             name="title"
             required
+            style={{ width: "100%" }}
             className="w-full bg-slate-700 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-cyan-400"
             placeholder="Наприклад: Реліз GTA VI перенесли..."
           />
@@ -181,6 +179,7 @@ export default async function AdminPage({
           <select
             name="categoryId"
             required
+            style={{ width: "100%" }}
             className="w-full bg-slate-700 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-cyan-400"
           >
             {categories.map((cat) => (
@@ -199,6 +198,7 @@ export default async function AdminPage({
             type="file"
             name="file"
             accept="image/*"
+            style={{ width: "100%" }}
             className="w-full bg-slate-700 border border-slate-600 rounded p-2.5 text-sm text-slate-200 file:mr-4 file:py-1.5 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-cyan-500 file:text-slate-950 hover:file:bg-cyan-400"
           />
         </div>
@@ -210,6 +210,7 @@ export default async function AdminPage({
           <input
             type="url"
             name="image"
+            style={{ width: "100%" }}
             className="w-full bg-slate-700 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-cyan-400"
             placeholder="https://example.com"
           />
@@ -219,16 +220,18 @@ export default async function AdminPage({
           <label className="block text-sm font-medium text-slate-300 mb-2">Текст новини</label>
           <textarea
             name="content"
-            rows={22}
+            rows={18}
             required
-            className="w-full bg-slate-700 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-cyan-400"
+            style={{ width: "100%", display: "block" }}
+            className="w-full bg-slate-700 border border-slate-600 rounded p-4 text-base leading-relaxed text-white focus:outline-none focus:border-cyan-400"
             placeholder="Напишіть контент статті тут..."
           />
         </div>
 
         <button
           type="submit"
-          className="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-bold p-3 rounded transition tracking-wide"
+          style={{ width: "100%" }}
+          className="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-bold p-3.5 rounded transition tracking-wide text-base"
         >
           Опублікувати новину
         </button>
