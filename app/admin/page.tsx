@@ -147,7 +147,8 @@ export default async function AdminPage({
   }
 
   return (
-    <main style={{ maxWidth: "100%", width: "100%" }} className="px-6 md:px-12 py-12 bg-slate-900 text-white min-h-screen">
+      return (
+    <main style={{ width: "96vw", maxWidth: "1600px", margin: "0 auto" }} className="px-6 py-12 bg-slate-900 text-white min-h-screen">
 
       <div className="flex justify-between items-center mb-6">
         <Link href="/" className="text-cyan-400 hover:underline text-sm">
