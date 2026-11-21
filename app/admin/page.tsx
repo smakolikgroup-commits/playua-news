@@ -147,7 +147,7 @@ export default async function AdminPage({
   }
 
     return (
-    <main style={{ width: "96vw", maxWidth: "1600px", margin: "0 auto" }} className="px-6 py-12 bg-slate-900 text-white min-h-screen">
+    <main style={{ width: "45%", minWidth: "340px", margin: "0 auto" }} className="py-12 px-4 text-white min-h-screen">
 
       
     
