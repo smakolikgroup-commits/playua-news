@@ -147,7 +147,7 @@ export default async function AdminPage({
   }
 
   return (
-    <main className="max-w-[95%] mx-auto px-4 py-12 bg-slate-900 text-white min-h-screen">
+    <main className="w-full max-w-none px-8 py-12 bg-slate-900 text-white min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <Link href="/" className="text-cyan-400 hover:underline text-sm">
           ← На головну
