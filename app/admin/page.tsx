@@ -146,10 +146,11 @@ export default async function AdminPage({
     redirect("/");
   }
 
-  return (
-      return (
+    return (
     <main style={{ width: "96vw", maxWidth: "1600px", margin: "0 auto" }} className="px-6 py-12 bg-slate-900 text-white min-h-screen">
 
+      
+    
       <div className="flex justify-between items-center mb-6">
         <Link href="/" className="text-cyan-400 hover:underline text-sm">
           ← На головну
