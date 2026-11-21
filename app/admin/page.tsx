@@ -147,7 +147,8 @@ export default async function AdminPage({
   }
 
   return (
-    <main className="w-full max-w-none px-8 py-12 bg-slate-900 text-white min-h-screen">
+    <main style={{ maxWidth: "100%", width: "100%" }} className="px-6 md:px-12 py-12 bg-slate-900 text-white min-h-screen">
+
       <div className="flex justify-between items-center mb-6">
         <Link href="/" className="text-cyan-400 hover:underline text-sm">
           ← На головну
@@ -161,7 +162,7 @@ export default async function AdminPage({
 
       <h1 className="text-3xl font-bold mb-8 text-cyan-400">Додати нову публікацію</h1>
 
-      <form action={createPost} className="space-y-6 bg-slate-800 p-6 rounded-lg border border-slate-700 mb-12">
+     <form action={createPost} style={{ maxWidth: "100%", width: "100%" }} className="space-y-6 bg-slate-800 p-6 rounded-lg border border-slate-700 mb-12">
         <div>
           <label className="block text-sm font-medium text-slate-300 mb-2">Назва статті</label>
           <input
