@@ -147,7 +147,7 @@ export default async function AdminPage({
   }
 
   return (
-    <main className="max-w-3xl mx-auto px-4 py-12 bg-slate-900 text-white min-h-screen">
+    <main className="max-w-5xl mx-auto px-4 py-12 bg-slate-900 text-white min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <Link href="/" className="text-cyan-400 hover:underline text-sm">
           ← На головну
@@ -216,7 +216,7 @@ export default async function AdminPage({
           <label className="block text-sm font-medium text-slate-300 mb-2">Текст новини</label>
           <textarea
             name="content"
-            rows={8}
+            rows={22}
             required
             className="w-full bg-slate-700 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-cyan-400"
             placeholder="Напишіть контент статті тут..."
