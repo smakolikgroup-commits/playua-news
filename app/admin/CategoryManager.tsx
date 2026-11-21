@@ -90,7 +90,7 @@ export default async function CategoryManager() {
                 <button
                   type="submit"
                   title="Видалити порожню категорію"
-                  className="text-red-400 hover:text-red-300 font-bold ml-1 px-1 rounded hover:bg-red-500/20 transition"
+                  className="text-red-400 hover:text-red-300 font-bold ml-1 px-1.5 py-0.5 rounded hover:bg-red-500/20 transition"
                 >
                   ✕
                 </button>
