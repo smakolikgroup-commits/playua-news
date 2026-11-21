@@ -29,12 +29,11 @@ export default function RootLayout({
   return (
     <html lang="uk">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-[#0b0f19] text-slate-100`}
-      >
-        <div className="flex-grow w-full">{children}</div>
-
-        <Footer />
-      </body>
+  className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-[#f4f5f7] text-slate-900`}
+>
+  <div className="flex-grow w-full">{children}</div>
+  <Footer />
+</body>
     </html>
   );
 }
