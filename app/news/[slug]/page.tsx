@@ -1,4 +1,5 @@
 export const dynamic = "force-dynamic";import CommentsSection from "./CommentsSection";
+import ShareButtons from "./ShareButtons";
 
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
@@ -124,7 +125,9 @@ export default async function ArticlePage({
         </div>
 
         <div className="space-y-6 text-slate-200 text-lg leading-relaxed whitespace-pre-line">
-          {post.content}
+         <ShareButtons title={post.title} slug={post.slug} />
+ 
+      {post.content}
         </div>
       </article>
       <CommentsSection postId={post.id} slug={post.slug} />
