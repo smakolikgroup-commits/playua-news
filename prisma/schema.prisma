@@ -21,6 +21,7 @@ model Post {
   content    String
   image      String
   views      Int       @default(0)
+  lang String @default("uk")
   createdAt  DateTime  @default(now())
   categoryId String
   category   Category  @relation(fields: [categoryId], references: [id])

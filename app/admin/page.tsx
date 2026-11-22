@@ -7,6 +7,7 @@ import Link from "next/link";
 import { put } from "@vercel/blob";
 import PostsList from "./PostsList";
 import CategoryManager from "./CategoryManager";
+import { LANGUAGES } from "@/lib/i18n";
 
 export default async function AdminPage({
   searchParams,
@@ -114,6 +115,7 @@ export default async function AdminPage({
     const title = formData.get("title") as string;
     const content = formData.get("content") as string;
     const categoryId = formData.get("categoryId") as string;
+    const lang = (formData.get("lang") as string) || "uk";
     const file = formData.get("file") as File | null;
     let imageUrl = (formData.get("image") as string)?.trim();
 
@@ -172,6 +174,21 @@ export default async function AdminPage({
             className="w-full bg-slate-700 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-cyan-400"
             placeholder="Наприклад: Реліз GTA VI перенесли..."
           />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-2">Мова публікації</label>
+          <select
+            name="lang"
+            defaultValue="uk"
+            style={{ width: "100%" }}
+            className="w-full bg-slate-700 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-cyan-400"
+          >
+            {LANGUAGES.map((l) => (
+              <option key={l.code} value={l.code}>
+                {l.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>
