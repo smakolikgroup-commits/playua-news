@@ -1,4 +1,4 @@
-import { LANGUAGES, LangCode } from "./i18n";
+﻿import { LANGUAGES, LangCode } from "./i18n";
 
 export async function translateArticleWithAI(
   title: string,
@@ -7,7 +7,7 @@ export async function translateArticleWithAI(
 ): Promise<Record<LangCode, { title: string; content: string }>> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("Відсутній ключ GEMINI_API_KEY у налаштуваннях середовища.");
+    throw new Error("Р’С–РґСЃСѓС‚РЅС–Р№ РєР»СЋС‡ GEMINI_API_KEY Сѓ РЅР°Р»Р°С€С‚СѓРІР°РЅРЅСЏС… СЃРµСЂРµРґРѕРІРёС‰Р°.");
   }
 
   const targetLangs = LANGUAGES.filter((l) => l.code !== sourceLang)
@@ -59,3 +59,5 @@ ${content}`;
     ...parsed,
   } as Record<LangCode, { title: string; content: string }>;
 }
+
+
