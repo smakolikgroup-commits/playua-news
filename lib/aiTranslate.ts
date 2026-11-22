@@ -1,4 +1,4 @@
-import { LANGUAGES, LangCode } from "./i18n";
+﻿import { LANGUAGES, LangCode } from "./i18n";
 
 export async function translateArticleWithAI(
   title: string,
@@ -7,7 +7,7 @@ export async function translateArticleWithAI(
 ): Promise<Record<LangCode, { title: string; content: string }>> {
   const apiKey = process.env.GROQ_API_KEY?.trim();
   if (!apiKey) {
-    throw new Error("Відсутній ключ GROQ_API_KEY у налаштуваннях середовища.");
+    throw new Error("Р’С–РґСЃСѓС‚РЅС–Р№ РєР»СЋС‡ GROQ_API_KEY Сѓ РЅР°Р»Р°С€С‚СѓРІР°РЅРЅСЏС… СЃРµСЂРµРґРѕРІРёС‰Р°.");
   }
 
   const targetLangs = LANGUAGES.filter((l) => l.code !== sourceLang)
@@ -27,7 +27,7 @@ ${title}
 Original Content:
 ${content}`;
 
-  const response = await fetch("https://groq.com", {
+  const response = await fetch(["https:/", "api.groq.com", "openai", "v1", "chat", "completions"].join("/"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -55,3 +55,5 @@ ${content}`;
     ...parsed,
   } as Record<LangCode, { title: string; content: string }>;
 }
+
+
