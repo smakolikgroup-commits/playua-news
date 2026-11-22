@@ -1,13 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { LANGUAGES, LangCode } from "./i18n";
 
-const CANDIDATE_MODELS = [
-  "gemini-3-flash-preview",
-  "gemini-2.5-flash",
-  "gemini-2.0-flash",
-  "gemini-flash-latest",
-];
-
 export async function translateArticleWithAI(
   title: string,
   content: string,
@@ -19,6 +12,30 @@ export async function translateArticleWithAI(
   }
 
   const ai = new GoogleGenAI({ apiKey });
+
+  // Автоматично дізнаємося, які моделі активні саме на цьому ключі
+  const availableModels: string[] = [];
+  try {
+    const listPager = await ai.models.list();
+    for await (const m of listPager) {
+      if (m.name && m.name.includes("gemini") && !m.name.includes("embedding") && !m.name.includes("imagen")) {
+        availableModels.push(m.name.replace("models/", ""));
+      }
+    }
+  } catch {
+    // резервний список, якщо list() обмежений
+  }
+
+  const modelsToTry = Array.from(
+    new Set([
+      ...availableModels.filter((m) => m.includes("flash")),
+      ...availableModels,
+      "gemini-3-flash-preview",
+      "gemini-2.5-flash",
+      "gemini-2.0-flash",
+      "gemini-1.5-flash",
+    ])
+  );
 
   const targetLangs = LANGUAGES.filter((l) => l.code !== sourceLang)
     .map((l) => `${l.code} (${l.name})`)
@@ -39,7 +56,7 @@ ${content}`;
 
   let lastError: unknown;
 
-  for (const model of CANDIDATE_MODELS) {
+  for (const model of modelsToTry) {
     try {
       const response = await ai.models.generateContent({
         model,
