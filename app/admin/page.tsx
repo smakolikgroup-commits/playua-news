@@ -7,7 +7,8 @@ import Link from "next/link";
 import { put } from "@vercel/blob";
 import PostsList from "./PostsList";
 import CategoryManager from "./CategoryManager";
-import { LANGUAGES } from "@/lib/i18n";
+import { LANGUAGES, LangCode } from "@/lib/i18n";
+import { translateArticleWithAI } from "@/lib/aiTranslate";
 
 export default async function AdminPage({
   searchParams,
@@ -115,7 +116,8 @@ export default async function AdminPage({
     const title = formData.get("title") as string;
     const content = formData.get("content") as string;
     const categoryId = formData.get("categoryId") as string;
-    const lang = (formData.get("lang") as string) || "uk";
+    const lang = ((formData.get("lang") as string) || "uk") as LangCode;
+    const autoTranslate = formData.get("autoTranslate") === "on";
     const file = formData.get("file") as File | null;
     let imageUrl = (formData.get("image") as string)?.trim();
 
@@ -126,24 +128,50 @@ export default async function AdminPage({
       imageUrl = blob.url;
     }
 
-    const slug =
-      title
+    const finalImage =
+      imageUrl || "https://unsplash.com";
+
+    const makeSlug = (text: string, suffix: string) =>
+      text
         .toLowerCase()
         .replace(/[^a-z0-9а-яіїєґ\s]/g, "")
         .trim()
-        .replace(/\s+/g, "-") +
+        .replace(/\s+/g, "-")
+        .slice(0, 60) +
       "-" +
-      Date.now().toString().slice(-4);
+      suffix;
 
-    await db.post.create({
-      data: {
-        title,
-        slug,
-        content,
-        image: imageUrl || "https://unsplash.com",
-        categoryId,
-      },
-    });
+    if (autoTranslate) {
+      const translations = await translateArticleWithAI(title, content, lang);
+      const batchId = Date.now().toString().slice(-4);
+
+      for (const item of LANGUAGES) {
+        const translated = translations[item.code];
+        if (translated?.title && translated?.content) {
+          await db.post.create({
+            data: {
+              title: translated.title,
+              slug: makeSlug(translated.title || title, `${item.code}-${batchId}`),
+              content: translated.content,
+              lang: item.code,
+              image: finalImage,
+              categoryId,
+            },
+          });
+        }
+      }
+    } else {
+      await db.post.create({
+        data: {
+          title,
+          slug: makeSlug(title, Date.now().toString().slice(-4)),
+          content,
+          lang,
+          image: finalImage,
+          categoryId,
+        },
+      });
+    }
 
     redirect("/");
   }
@@ -175,21 +203,6 @@ export default async function AdminPage({
             placeholder="Наприклад: Реліз GTA VI перенесли..."
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Мова публікації</label>
-          <select
-            name="lang"
-            defaultValue="uk"
-            style={{ width: "100%" }}
-            className="w-full bg-slate-700 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-cyan-400"
-          >
-            {LANGUAGES.map((l) => (
-              <option key={l.code} value={l.code}>
-                {l.name}
-              </option>
-            ))}
-          </select>
-        </div>
 
         <div>
           <label className="block text-sm font-medium text-slate-300 mb-2">Категорія</label>
@@ -206,6 +219,39 @@ export default async function AdminPage({
             ))}
           </select>
         </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-2">Мова публікації</label>
+          <select
+            name="lang"
+            defaultValue="uk"
+            style={{ width: "100%" }}
+            className="w-full bg-slate-700 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-cyan-400"
+          >
+            {LANGUAGES.map((l) => (
+              <option key={l.code} value={l.code}>
+                {l.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <label className="flex items-center gap-3 bg-slate-700/60 border border-cyan-500/40 rounded-lg p-3.5 cursor-pointer hover:bg-slate-700 transition">
+          <input
+            type="checkbox"
+            name="autoTranslate"
+            defaultChecked
+            className="w-5 h-5 accent-cyan-400 rounded"
+          />
+          <div>
+            <span className="block text-sm font-bold text-cyan-300">
+              ✨ Автоматично перекласти ШІ на всі 7 мов
+            </span>
+            <span className="block text-xs text-slate-400">
+              Стаття автоматично з&apos;явиться в українській, англійській, польській, французькій, португальській, іспанській та китайській версіях.
+            </span>
+          </div>
+        </label>
 
         <div>
           <label className="block text-sm font-medium text-slate-300 mb-2">
@@ -241,21 +287,14 @@ export default async function AdminPage({
             required
             style={{ width: "100%", display: "block" }}
             className="w-full bg-slate-700 border border-slate-600 rounded p-4 text-base leading-relaxed text-white focus:outline-none focus:border-cyan-400"
-            placeholder="Напишіть контент статті тут..."
-          />
-        </div>
+placeholder="Напишіть контент статті тут..."
+/>
+<button
+type="submit"
+style={{ width: "100%" }}
+className="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-bold p-3.5 rounded transition tracking-wide text-base"
+>
+Опублікувати новину
 
-        <button
-          type="submit"
-          style={{ width: "100%" }}
-          className="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-bold p-3.5 rounded transition tracking-wide text-base"
-        >
-          Опублікувати новину
-        </button>
-      </form>
-
-      <CategoryManager />
-      <PostsList />
-    </main>
-  );
+);
 }
