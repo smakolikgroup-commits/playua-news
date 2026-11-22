@@ -1,11 +1,11 @@
-import { MetadataRoute } from "next";
+﻿import { MetadataRoute } from "next";
 import { db } from "@/lib/db";
 import { LANGUAGES } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://vercel.app";
+  const baseUrl = "https://playua-clone-ua.vercel.app";
 
   const posts = await db.post.findMany({
     select: { slug: true, createdAt: true },

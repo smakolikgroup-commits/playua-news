@@ -1,7 +1,7 @@
-import { MetadataRoute } from "next";
+﻿import { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = "https://vercel.app";
+  const baseUrl = "https://playua-clone-ua.vercel.app";
 
   return {
     rules: {

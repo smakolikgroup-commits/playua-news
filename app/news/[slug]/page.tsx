@@ -21,7 +21,7 @@ export async function generateMetadata({
     return { title: "Статтю не знайдено | PLAYUA" };
   }
 
-  const url = `https://vercel.app{post.slug}`;
+  const url = `https://playua-clone-ua.vercel.app{post.slug}`;
   const description = post.content.replace(/\s+/g, " ").trim().slice(0, 160);
 
   return {
