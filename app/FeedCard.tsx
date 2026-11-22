@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { LangCode, translateCategory } from "@/lib/i18n";
 
-export default function FeedCard({ post }: { post: any }) {
+export default function FeedCard({ post, lang = "uk" }: { post: any; lang?: LangCode }) {
   return (
     <article className="group bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-xs hover:shadow-md transition flex flex-col sm:flex-row">
       <Link
@@ -18,11 +19,11 @@ export default function FeedCard({ post }: { post: any }) {
         <div>
           <div className="flex items-center gap-2 text-xs mb-2">
             <span className="font-extrabold uppercase tracking-wider text-amber-600">
-              {post.category.name}
+              {translateCategory(post.category.slug, post.category.name, lang)}
             </span>
             <span className="text-slate-300">•</span>
             <span className="text-slate-400">
-              {new Date(post.createdAt).toLocaleDateString("uk-UA", {
+              {new Date(post.createdAt).toLocaleDateString(lang === "uk" ? "uk-UA" : lang, {
                 day: "numeric",
                 month: "long",
                 year: "numeric",

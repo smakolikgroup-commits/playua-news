@@ -1,8 +1,12 @@
 import { db } from "@/lib/db";
 import Link from "next/link";
+import { getDict, translateCategory } from "@/lib/i18n";
 
-export default async function Sidebar() {
+export default async function Sidebar({ lang: rawLang }: { lang?: string }) {
+  const { lang, t } = getDict(rawLang);
+
   const popularPosts = await db.post.findMany({
+    where: rawLang ? { lang } : {},
     orderBy: { views: "desc" },
     take: 5,
     include: { category: true },
@@ -10,10 +14,9 @@ export default async function Sidebar() {
 
   return (
     <aside className="space-y-8">
-      {/* Соціальні мережі PlayUA */}
       <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80">
         <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-3">
-          Ми у соцмережах
+          {t.socials}
         </h3>
         <div className="grid grid-cols-3 gap-2 text-center text-xs font-bold">
           <a href="#telegram" className="py-2.5 rounded-lg bg-[#229ED9]/10 text-[#229ED9] hover:bg-[#229ED9] hover:text-white transition">
@@ -28,13 +31,12 @@ export default async function Sidebar() {
         </div>
       </div>
 
-      {/* Популярні матеріали */}
       {popularPosts.length > 0 && (
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80">
           <div className="flex items-center gap-2 mb-5 pb-3 border-b border-slate-100">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block" />
             <h3 className="text-base font-black uppercase tracking-tight text-slate-900">
-              Популярне
+              {t.popular}
             </h3>
           </div>
 
@@ -53,7 +55,9 @@ export default async function Sidebar() {
                     {post.title}
                   </h4>
                   <div className="text-[11px] font-medium text-slate-400 flex items-center gap-2">
-                    <span className="text-slate-500 font-semibold">{post.category.name}</span>
+                    <span className="text-slate-500 font-semibold">
+                      {translateCategory(post.category.slug, post.category.name, lang)}
+                    </span>
                     <span>•</span>
                     <span>👁 {post.views}</span>
                   </div>
@@ -64,23 +68,22 @@ export default async function Sidebar() {
         </div>
       )}
 
-      {/* Блок підтримки спільноти */}
       <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-md relative overflow-hidden">
         <div className="relative z-10">
           <span className="inline-block bg-amber-400 text-slate-950 text-[10px] font-black uppercase px-2 py-0.5 rounded mb-2">
-            Спільнота
+            {t.communityBadge}
           </span>
           <h3 className="text-lg font-extrabold leading-snug mb-2">
-            Живи, твори, грай!
+            {t.communityTitle}
           </h3>
           <p className="text-xs text-slate-300 leading-relaxed mb-4">
-            Читайте свіжі новини ігрової індустрії, огляди та кіберспорт українською мовою.
+            {t.communityDesc}
           </p>
           <Link
             href="/admin"
             className="inline-block w-full text-center bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs uppercase tracking-wider py-2.5 rounded-lg transition"
           >
-            Додати матеріал
+            {t.addPost}
           </Link>
         </div>
       </div>

@@ -179,3 +179,15 @@ export function getDict(lang?: string) {
   const valid = LANGUAGES.find((l) => l.code === lang)?.code || "uk";
   return { lang: valid, t: DICTIONARY[valid] };
 }
+
+const CATEGORY_TRANSLATIONS: Record<string, Record<LangCode, string>> = {
+  igry: { uk: "Ігри", en: "Games", pl: "Gry", fr: "Jeux", pt: "Jogos", es: "Juegos", zh: "游戏" },
+  cybersport: { uk: "Кіберспорт", en: "Esports", pl: "E-sport", fr: "E-sport", pt: "E-sports", es: "Esports", zh: "电子竞技" },
+  kino: { uk: "Кіно", en: "Movies", pl: "Kino", fr: "Cinéma", pt: "Cinema", es: "Cine", zh: "电影" },
+  novyny: { uk: "Новини", en: "News", pl: "Wiadomości", fr: "Actualités", pt: "Notícias", es: "Noticias", zh: "新闻" },
+  oglyady: { uk: "Огляди", en: "Reviews", pl: "Recenzje", fr: "Tests", pt: "Análises", es: "Reseñas", zh: "评测" },
+};
+
+export function translateCategory(slug: string, fallbackName: string, lang: LangCode) {
+  return CATEGORY_TRANSLATIONS[slug]?.[lang] || fallbackName;
+}
