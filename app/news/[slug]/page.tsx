@@ -1,41 +1,49 @@
-export const dynamic = "force-dynamic";import CommentsSection from "./CommentsSection";
+﻿export const dynamic = "force-dynamic";import CommentsSection from "./CommentsSection";
 import ShareButtons from "./ShareButtons";
 
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
-}) {
+}): Promise<Metadata> {
   const { slug } = await params;
   const post = await db.post.findUnique({
     where: { slug },
+    include: { category: true },
   });
 
   if (!post) {
-    return { title: "Статтю не знайдено" };
+    return { title: "Статтю не знайдено | PLAYUA" };
   }
 
-  const description = post.content.slice(0, 150).trim() + "...";
+  const url = `https://vercel.app{post.slug}`;
+  const description = post.content.replace(/\s+/g, " ").trim().slice(0, 160);
 
   return {
-    title: post.title,
+    title: `${post.title} — PLAYUA`,
     description,
+    alternates: {
+      canonical: url,
+    },
     openGraph: {
       title: post.title,
       description,
+      url,
       type: "article",
-      images: [
-        {
-          url: post.image,
-          width: 1200,
-          height: 630,
-          alt: post.title,
-        },
-      ],
+      publishedTime: post.createdAt.toISOString(),
+      section: post.category.name,
+      images: [{ url: post.image, alt: post.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+      images: [post.image],
     },
   };
 }
@@ -93,6 +101,7 @@ export default async function ArticlePage({
       </header>
 
       <article className="max-w-4xl mx-auto px-4 py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@type": "NewsArticle", headline: post.title, image: [post.image], datePublished: post.createdAt.toISOString(), dateModified: post.createdAt.toISOString(), inLanguage: post.lang, author: [{ "@type": "Organization", name: "PLAYUA" }] }) }} />
         <div className="flex items-center gap-3 mb-4">
           <Link
             href={`/?category=${post.category.slug}`}
