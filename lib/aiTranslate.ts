@@ -1,6 +1,13 @@
 import { GoogleGenAI } from "@google/genai";
 import { LANGUAGES, LangCode } from "./i18n";
 
+const CANDIDATE_MODELS = [
+  "gemini-3-flash-preview",
+  "gemini-2.5-flash",
+  "gemini-2.0-flash",
+  "gemini-flash-latest",
+];
+
 export async function translateArticleWithAI(
   title: string,
   content: string,
@@ -30,18 +37,27 @@ ${title}
 Original Content:
 ${content}`;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-    },
-  });
+  let lastError: unknown;
 
-  const parsed = JSON.parse(response.text || "{}");
+  for (const model of CANDIDATE_MODELS) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+        },
+      });
 
-  return {
-    [sourceLang]: { title, content },
-    ...parsed,
-  } as Record<LangCode, { title: string; content: string }>;
+      const parsed = JSON.parse(response.text || "{}");
+      return {
+        [sourceLang]: { title, content },
+        ...parsed,
+      } as Record<LangCode, { title: string; content: string }>;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  throw lastError;
 }
