@@ -28,19 +28,21 @@ ${title}
 Original Content:
 ${content}`;
 
-  const response = await fetch(
-    `https://googleapis.com{apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json",
-        },
-      }),
-    }
+  const endpoint = new URL(
+    "https://googleapis.com"
   );
+  endpoint.searchParams.set("key", apiKey);
+
+  const response = await fetch(endpoint.toString(), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+      },
+    }),
+  });
 
   if (!response.ok) {
     const errText = await response.text();
