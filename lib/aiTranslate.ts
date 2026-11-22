@@ -1,23 +1,14 @@
-import { GoogleGenAI } from "@google/genai";
 import { LANGUAGES, LangCode } from "./i18n";
-
-const VERTEX_MODELS = [
-  "gemini-2.5-flash",
-  "gemini-2.5-flash-lite",
-  "gemini-2.0-flash-001",
-];
 
 export async function translateArticleWithAI(
   title: string,
   content: string,
   sourceLang: LangCode
 ): Promise<Record<LangCode, { title: string; content: string }>> {
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  const apiKey = process.env.GROQ_API_KEY?.trim();
   if (!apiKey) {
-    throw new Error("Відсутній ключ GEMINI_API_KEY у налаштуваннях середовища.");
+    throw new Error("Відсутній ключ GROQ_API_KEY у налаштуваннях середовища.");
   }
-
-  const ai = new GoogleGenAI({ apiKey, vertexai: true });
 
   const targetLangs = LANGUAGES.filter((l) => l.code !== sourceLang)
     .map((l) => `${l.code} (${l.name})`)
@@ -36,27 +27,31 @@ ${title}
 Original Content:
 ${content}`;
 
-  let lastError: unknown;
+  const response = await fetch("https://groq.com", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" },
+      temperature: 0.3,
+    }),
+  });
 
-  for (const model of VERTEX_MODELS) {
-    try {
-      const response = await ai.models.generateContent({
-        model,
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-        },
-      });
-
-      const parsed = JSON.parse(response.text || "{}");
-      return {
-        [sourceLang]: { title, content },
-        ...parsed,
-      } as Record<LangCode, { title: string; content: string }>;
-    } catch (err) {
-      lastError = err;
-    }
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Groq API error: ${response.status} ${errText}`);
   }
 
-  throw lastError;
+  const data = await response.json();
+  const rawText = data?.choices?.at(0)?.message?.content || "{}";
+  const parsed = JSON.parse(rawText);
+
+  return {
+    [sourceLang]: { title, content },
+    ...parsed,
+  } as Record<LangCode, { title: string; content: string }>;
 }
