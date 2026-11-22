@@ -13,6 +13,34 @@ export async function translateArticleWithAI(
 
   const groq = new Groq({ apiKey });
 
+  // Автоматично отримуємо список активних моделей, доступних для цього ключа
+  let selectedModel = "llama-3.1-8b-instant";
+  try {
+    const modelsList = await groq.models.list();
+    const textModels = (modelsList.data || [])
+      .map((m) => m.id)
+      .filter(
+        (id) =>
+          !id.includes("whisper") &&
+          !id.includes("guard") &&
+          !id.includes("tts") &&
+          !id.includes("safeguard")
+      );
+
+    const preferred =
+      textModels.find((id) => id.includes("gpt-oss-120b")) ||
+      textModels.find((id) => id.includes("70b")) ||
+      textModels.find((id) => id.includes("qwen")) ||
+      textModels.find((id) => id.includes("8b")) ||
+      textModels[0];
+
+    if (preferred) {
+      selectedModel = preferred;
+    }
+  } catch {
+    // fallback to default model
+  }
+
   const targetLangs = LANGUAGES.filter((l) => l.code !== sourceLang)
     .map((l) => `${l.code} (${l.name})`)
     .join(", ");
@@ -31,7 +59,7 @@ Original Content:
 ${content}`;
 
   const completion = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
+    model: selectedModel,
     messages: [{ role: "user", content: prompt }],
     response_format: { type: "json_object" },
     temperature: 0.3,
