@@ -7,6 +7,7 @@ import Link from "next/link";
 import { put } from "@vercel/blob";
 import PostsList from "./PostsList";
 import CategoryManager from "./CategoryManager";
+import CreatePostForm from "./CreatePostForm";
 import { LANGUAGES, LangCode } from "@/lib/i18n";
 import { translateArticleWithAI } from "@/lib/aiTranslate";
 
@@ -22,7 +23,6 @@ export default async function AdminPage({
   async function loginAction(formData: FormData) {
     "use server";
     const password = formData.get("password") as string;
-
     if (password === process.env.ADMIN_PASSWORD) {
       const store = await cookies();
       store.set("admin_session", "authenticated", {
@@ -50,33 +50,22 @@ export default async function AdminPage({
         <Link href="/" className="text-cyan-400 hover:underline text-sm mb-6 inline-block">
           ← На головну
         </Link>
-
         <div className="bg-slate-800 p-8 rounded-lg border border-slate-700 shadow-xl">
           <h1 className="text-2xl font-bold mb-2 text-cyan-400">Вхід в адмін-панель</h1>
-          <p className="text-slate-400 text-sm mb-6">Введіть пароль адміністратора для доступу.</p>
-
           {error && (
             <div className="bg-red-500/20 border border-red-500 text-red-300 text-sm p-3 rounded mb-4">
               Невірний пароль. Спробуйте ще раз.
             </div>
           )}
-
           <form action={loginAction} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Пароль</label>
-              <input
-                type="password"
-                name="password"
-                required
-                className="w-full bg-slate-700 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-cyan-400"
-                placeholder="••••••••"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-bold p-3 rounded transition"
-            >
+            <input
+              type="password"
+              name="password"
+              required
+              className="w-full bg-slate-700 border border-slate-600 rounded p-3 text-white"
+              placeholder="Пароль"
+            />
+            <button type="submit" className="w-full bg-cyan-500 text-slate-900 font-bold p-3 rounded">
               Увійти
             </button>
           </form>
@@ -85,33 +74,12 @@ export default async function AdminPage({
     );
   }
 
-  const defaultCategories = [
-    { name: "Новини", slug: "novyny" },
-    { name: "Огляди", slug: "oglyady" },
-    { name: "Кіберспорт", slug: "cybersport" },
-    { name: "Ігри", slug: "igry" },
-    { name: "Кіно", slug: "kino" },
-  ];
-
-  for (const cat of defaultCategories) {
-    await db.category.upsert({
-      where: { slug: cat.slug },
-      update: {},
-      create: cat,
-    });
-  }
-
-  const categories = await db.category.findMany({
-    orderBy: { name: "asc" },
-  });
+  const categories = await db.category.findMany({ orderBy: { name: "asc" } });
 
   async function createPost(formData: FormData) {
     "use server";
-
     const store = await cookies();
-    if (store.get("admin_session")?.value !== "authenticated") {
-      throw new Error("Немає доступу");
-    }
+    if (store.get("admin_session")?.value !== "authenticated") throw new Error("Немає доступу");
 
     const title = formData.get("title") as string;
     const content = formData.get("content") as string;
@@ -122,29 +90,17 @@ export default async function AdminPage({
     let imageUrl = (formData.get("image") as string)?.trim();
 
     if (file && file.size > 0) {
-      const blob = await put(`news/${Date.now()}-${file.name}`, file, {
-        access: "public",
-      });
+      const blob = await put(`news/${Date.now()}-${file.name}`, file, { access: "public" });
       imageUrl = blob.url;
     }
 
-    const finalImage =
-      imageUrl || "https://unsplash.com";
-
+    const finalImage = imageUrl || "https://unsplash.com";
     const makeSlug = (text: string, suffix: string) =>
-      text
-        .toLowerCase()
-        .replace(/[^a-z0-9а-яіїєґ\s]/g, "")
-        .trim()
-        .replace(/\s+/g, "-")
-        .slice(0, 60) +
-      "-" +
-      suffix;
+      text.toLowerCase().replace(/[^a-z0-9а-яіїєґ\s]/g, "").trim().replace(/\s+/g, "-").slice(0, 60) + "-" + suffix;
 
     if (autoTranslate) {
       const translations = await translateArticleWithAI(title, content, lang);
       const batchId = Date.now().toString().slice(-4);
-
       for (const item of LANGUAGES) {
         const translated = translations[item.code];
         if (translated?.title && translated?.content) {
@@ -162,14 +118,7 @@ export default async function AdminPage({
       }
     } else {
       await db.post.create({
-        data: {
-          title,
-          slug: makeSlug(title, Date.now().toString().slice(-4)),
-          content,
-          lang,
-          image: finalImage,
-          categoryId,
-        },
+        data: { title, slug: makeSlug(title, Date.now().toString().slice(-4)), content, lang, image: finalImage, categoryId },
       });
     }
 
@@ -179,122 +128,15 @@ export default async function AdminPage({
   return (
     <main style={{ width: "45%", minWidth: "480px", margin: "0 auto" }} className="py-12 px-6 text-white min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <Link href="/" className="text-cyan-400 hover:underline text-sm">
-          ← На головну
-        </Link>
+        <Link href="/" className="text-cyan-400 hover:underline text-sm">← На головну</Link>
         <form action={logoutAction}>
-          <button type="submit" className="text-sm text-slate-400 hover:text-red-400 transition">
-            Вийти з адмінки
-          </button>
+          <button type="submit" className="text-sm text-slate-400 hover:text-red-400 transition">Вийти з адмінки</button>
         </form>
       </div>
-
       <h1 className="text-3xl font-bold mb-8 text-cyan-400">Додати нову публікацію</h1>
-
-      <form action={createPost} className="space-y-6 bg-slate-800 p-6 md:p-8 rounded-lg border border-slate-700 mb-12">
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Назва статті</label>
-          <input
-            type="text"
-            name="title"
-            required
-            style={{ width: "100%" }}
-            className="w-full bg-slate-700 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-cyan-400"
-            placeholder="Наприклад: Реліз GTA VI перенесли..."
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Категорія</label>
-          <select
-            name="categoryId"
-            required
-            style={{ width: "100%" }}
-            className="w-full bg-slate-700 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-cyan-400"
-          >
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Мова публікації</label>
-          <select
-            name="lang"
-            defaultValue="uk"
-            style={{ width: "100%" }}
-            className="w-full bg-slate-700 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-cyan-400"
-          >
-            {LANGUAGES.map((l) => (
-              <option key={l.code} value={l.code}>
-                {l.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <label className="flex items-center gap-3 bg-slate-700/60 border border-cyan-500/40 rounded-lg p-3.5 cursor-pointer hover:bg-slate-700 transition">
-          <input
-            type="checkbox"
-            name="autoTranslate"
-            defaultChecked
-            className="w-5 h-5 accent-cyan-400 rounded"
-          />
-          <div>
-            <span className="block text-sm font-bold text-cyan-300">
-              ✨ Автоматично перекласти ШІ на всі 7 мов
-            </span>
-            <span className="block text-xs text-slate-400">
-              Стаття автоматично з&apos;явиться в українській, англійській, польській, французькій, португальській, іспанській та китайській версіях.
-            </span>
-          </div>
-        </label>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
-            Завантажити обкладинку з комп&apos;ютера (JPG, PNG, WebP)
-          </label>
-          <input
-            type="file"
-            name="file"
-            accept="image/*"
-            style={{ width: "100%" }}
-            className="w-full bg-slate-700 border border-slate-600 rounded p-2.5 text-sm text-slate-200 file:mr-4 file:py-1.5 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-cyan-500 file:text-slate-950 hover:file:bg-cyan-400"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
-            Або вставте посилання на зображення (URL)
-          </label>
-          <input
-            type="url"
-            name="image"
-            style={{ width: "100%" }}
-            className="w-full bg-slate-700 border border-slate-600 rounded p-3 text-white focus:outline-none focus:border-cyan-400"
-            placeholder="https://example.com"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">Текст новини</label>
-          <textarea
-            name="content"
-            rows={18}
-            required
-            style={{ width: "100%", display: "block" }}
-            className="w-full bg-slate-700 border border-slate-600 rounded p-4 text-base leading-relaxed text-white focus:outline-none focus:border-cyan-400"
-placeholder="Напишіть контент статті тут..."
-/>
-<button
-type="submit"
-style={{ width: "100%" }}
-className="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-bold p-3.5 rounded transition tracking-wide text-base"
->
-Опублікувати новину
-
-);
+      <CreatePostForm categories={categories} createPost={createPost} />
+      <CategoryManager />
+      <PostsList />
+    </main>
+  );
 }
