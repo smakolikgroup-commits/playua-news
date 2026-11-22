@@ -1,4 +1,5 @@
-﻿import { LANGUAGES, LangCode } from "./i18n";
+import Groq from "groq-sdk";
+import { LANGUAGES, LangCode } from "./i18n";
 
 export async function translateArticleWithAI(
   title: string,
@@ -7,8 +8,10 @@ export async function translateArticleWithAI(
 ): Promise<Record<LangCode, { title: string; content: string }>> {
   const apiKey = process.env.GROQ_API_KEY?.trim();
   if (!apiKey) {
-    throw new Error("Р’С–РґСЃСѓС‚РЅС–Р№ РєР»СЋС‡ GROQ_API_KEY Сѓ РЅР°Р»Р°С€С‚СѓРІР°РЅРЅСЏС… СЃРµСЂРµРґРѕРІРёС‰Р°.");
+    throw new Error("Відсутній ключ GROQ_API_KEY у налаштуваннях середовища.");
   }
+
+  const groq = new Groq({ apiKey });
 
   const targetLangs = LANGUAGES.filter((l) => l.code !== sourceLang)
     .map((l) => `${l.code} (${l.name})`)
@@ -27,27 +30,14 @@ ${title}
 Original Content:
 ${content}`;
 
-  const response = await fetch(["https:/", "api.groq.com", "openai", "v1", "chat", "completions"].join("/"), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "llama-3.3-70b-versatile",
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
-      temperature: 0.3,
-    }),
+  const completion = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [{ role: "user", content: prompt }],
+    response_format: { type: "json_object" },
+    temperature: 0.3,
   });
 
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Groq API error: ${response.status} ${errText}`);
-  }
-
-  const data = await response.json();
-  const rawText = data?.choices?.at(0)?.message?.content || "{}";
+  const rawText = completion.choices.at(0)?.message?.content || "{}";
   const parsed = JSON.parse(rawText);
 
   return {
@@ -55,5 +45,3 @@ ${content}`;
     ...parsed,
   } as Record<LangCode, { title: string; content: string }>;
 }
-
-
