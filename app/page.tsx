@@ -85,7 +85,8 @@ export default async function HomePage({
           </div>
 
           <div className="flex items-center gap-2.5">
-            <div className="hidden md:flex items-center bg-slate-100 rounded-lg p-1 text-xs font-extrabold border border-slate-200 gap-0.5">
+          <div className="flex items-center bg-slate-100 rounded-lg p-1 text-xs font-extrabold border border-slate-200 gap-0.5 overflow-x-auto">
+
               {LANGUAGES.map((item) => (
                 <Link
                   key={item.code}
